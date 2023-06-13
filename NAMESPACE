@@ -1,0 +1,4 @@
+exportPattern("^[[:alpha:]]+")
+importFrom(Rcpp, evalCpp)
+import(qvalue)
+useDynLib(STAREG, .registration = TRUE)
