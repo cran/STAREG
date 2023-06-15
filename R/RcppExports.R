@@ -28,7 +28,7 @@ NULL
 #' @description The pool-adjacent-violator-algorithm is applied to fit the isotonic regression of a set of data.
 #' @param values A numeric vector of data whose isotonic regression is to be calculated.
 #' @param weight The weight vector to be used for a weighted isotonic regression.
-#' @param decreasing A logical scalar that specifies the order of the isotonic regression (true if decreasing; false otherwise).
+#' @param decreasing A logical scalar that specifies the order of the isotonic regression (1 if decreasing; 0 otherwise).
 #'
 #' @return
 #' \item{xx}{The fitted values of the data.}
