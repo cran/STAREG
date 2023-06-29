@@ -69,19 +69,20 @@ SEXP em_lfdr(SEXP pa_in, SEXP pb_in, SEXP pi0a_in, SEXP pi0b_in) {
     vec Q1(J), Q2(J), y1(J), y2(J), res1(J), res2(J);
     double loglik_delta;
 
-    //std::cout<<"EM begins:"<<std::endl;
     Rcout << "EM begins:" << "\n";
+
+    vec f1_temp = f1, f2_temp = f2;
 
     for (int i = 1; i < maxIter; i++){
       // E-step
-      f = xi00 * f0 % f0 + xi01 * f0 % f2 + xi10 * f1 % f0 + xi11 * f1 % f2;
+      f = xi00 * f0 % f0 + xi01 * f0 % f2_temp + xi10 * f1_temp % f0 + xi11 * f1_temp % f2_temp;
       gamma00 = xi00 * f0 % f0 / f;
-      gamma01 = xi01 * f0 % f2 / f;
-      gamma10 = xi10 * f1 % f0 / f;
+      gamma01 = xi01 * f0 % f2_temp / f;
+      gamma10 = xi10 * f1_temp % f0 / f;
       gamma11 = 1 - gamma00 - gamma01 - gamma10;
 
       // M-step
-      // update f1 and f2
+      // update f1_temp and f2_temp
       Q1 = gamma01 + gamma00;
       Q2 = gamma10 + gamma00;
       Q1 = Q1(ix1);
@@ -97,19 +98,27 @@ SEXP em_lfdr(SEXP pa_in, SEXP pb_in, SEXP pi0a_in, SEXP pi0b_in) {
       res1 = my_pava(y1, _Q1, 1);
       res2 = my_pava(y2, _Q2, 1);
 
-      f1 = -1 / res1;
-      f1 = f1 / sum(f1 % p1_diff);
-      f1(ix1) = f1;
-      f1.elem(find_nan(f1)).fill(f1.min());
+      f1_temp = -1 / res1;
+      f1_temp = f1_temp / sum(f1_temp % p1_diff);
+      f1_temp(ix1) = f1_temp;
+      f1_temp.elem(find_nan(f1_temp)).fill(f1_temp.min());
 
-      f2 = -1 / res2;
-      f2 = f2 / sum(f2 % p2_diff);
-      f2(ix2) = f2;
-      f2.elem(find_nan(f2)).fill(f2.min());
+      f2_temp = -1 / res2;
+      f2_temp = f2_temp / sum(f2_temp % p2_diff);
+      f2_temp(ix2) = f2_temp;
+      f2_temp.elem(find_nan(f2_temp)).fill(f2_temp.min());
 
-      double min_f1 = f1.elem(find(f1>0)).min(), min_f2 = f2.elem(find(f2>0)).min();
-      f1.elem(find(f1<=0)).fill(f_cutoff < min_f1 ? f_cutoff : min_f1);
-      f2.elem(find(f2<=0)).fill(f_cutoff < min_f2 ? f_cutoff : min_f2);
+      if(find_finite(f1_temp).is_empty() || find_finite(f2_temp).is_empty()){
+        break;
+      }
+
+      double max_f1_temp = f1_temp.elem(find_finite(f1_temp)).max(), max_f2_temp = f2_temp.elem(find_finite(f2_temp)).max();
+      f1_temp.elem(find_nonfinite(f1_temp)).fill(max_f1_temp);
+      f2_temp.elem(find_nonfinite(f2_temp)).fill(max_f2_temp);
+
+      double min_f1_temp = f1_temp.elem(find(f1_temp>0)).min(), min_f2_temp = f2_temp.elem(find(f2_temp>0)).min();
+      f1_temp.elem(find(f1_temp<=0)).fill(std::fmin(f_cutoff, min_f1_temp));
+      f2_temp.elem(find(f2_temp<=0)).fill(std::fmin(f_cutoff, min_f2_temp));
 
       // update xi's
       xi00 = mean(gamma00);
@@ -118,12 +127,15 @@ SEXP em_lfdr(SEXP pa_in, SEXP pb_in, SEXP pi0a_in, SEXP pi0b_in) {
       xi11 = mean(gamma11);
 
       // calculate the updated log-likelihood
-      loglik(i) = sum((gamma10+gamma11)%log(f1)+(gamma01+gamma11)%log(f2)) +
+      loglik(i) = sum((gamma10+gamma11)%log(f1_temp)+(gamma01+gamma11)%log(f2_temp)) +
         sum(gamma11*log(xi11)+gamma10*log(xi10)+gamma01*log(xi01)+gamma00*log(xi00));
-      loglik_delta = std::fabs((loglik(i) / loglik(i-1)) - 1);
 
-      //std::cout<<i<<". "<< loglik(i) << ", delta = " << loglik_delta << std::endl;
+      loglik_delta = std::fabs((loglik(i) / loglik(i-1)) - 1);
+      
       Rcout << i << ". " << loglik(i) << ", delta = " << loglik_delta << "\n";
+
+      f1 = f1_temp;
+      f2 = f2_temp;
 
       if(loglik_delta <= tol){
         break;
@@ -163,6 +175,7 @@ SEXP em_lfdr(SEXP pa_in, SEXP pb_in, SEXP pi0a_in, SEXP pi0b_in) {
 //' @return
 //' \item{Lfdr}{The plug-in estimates of local false discovery rate for all features.}
 //'
+// [[Rcpp::export]]
 vec replfdr(double &xi00, double &xi01, double &xi10, double &xi11, vec &f1, vec &f2){
   uword J = f1.size();
   vec f0 = ones(J,1);
@@ -186,6 +199,7 @@ vec replfdr(double &xi00, double &xi01, double &xi10, double &xi11, vec &f1, vec
 //' @return
 //' \item{lfdr_adj}{The adjusted local false discovery rate values for FDR control.}
 //'
+// [[Rcpp::export]]
 vec fdr(vec &Lfdr){
   uword m = Lfdr.size();
 

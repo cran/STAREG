@@ -1,4 +1,4 @@
-f2ba64497d52d3f7f1bd61f315751037 *DESCRIPTION
+a018f4d72c67dbcecf620a9da722910b *DESCRIPTION
 6741e33ebd831c842200abaab073b8fe *NAMESPACE
 2791824a3a07625f459f2631023810e4 *R/RcppExports.R
 f0b65b0bc9af49e741c800e039cb95f9 *R/stareg.R
@@ -7,5 +7,5 @@ cf7fd8442bba31a16dce516c15c4a88c *man/em_lfdr.Rd
 e62585629948e7dd143efbad43c2a6eb *src/Makevars
 e62585629948e7dd143efbad43c2a6eb *src/Makevars.win
 3bcd5488345aa148d9e689e84567e820 *src/RcppExports.cpp
-719a388bc621762d8358e98202473012 *src/em_lfdr.cpp
+d3086a1cb8a2ba6b8cc8822b557cb53a *src/em_lfdr.cpp
 4fbb04ba83425856b92fef84e6243d31 *src/init.c
