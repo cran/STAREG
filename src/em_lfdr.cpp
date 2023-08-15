@@ -175,8 +175,7 @@ SEXP em_lfdr(SEXP pa_in, SEXP pb_in, SEXP pi0a_in, SEXP pi0b_in) {
 //' @return
 //' \item{Lfdr}{The plug-in estimates of local false discovery rate for all features.}
 //'
-// [[Rcpp::export]]
-vec replfdr(double &xi00, double &xi01, double &xi10, double &xi11, vec &f1, vec &f2){
+vec replfdr(double &xi00, double &xi01, double &xi10, double &xi11, arma::vec &f1, vec &f2){
   uword J = f1.size();
   vec f0 = ones(J,1);
 
@@ -199,7 +198,6 @@ vec replfdr(double &xi00, double &xi01, double &xi10, double &xi11, vec &f1, vec
 //' @return
 //' \item{lfdr_adj}{The adjusted local false discovery rate values for FDR control.}
 //'
-// [[Rcpp::export]]
 vec fdr(vec &Lfdr){
   uword m = Lfdr.size();
 

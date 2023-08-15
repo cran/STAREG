@@ -4,12 +4,14 @@
 \alias{stareg}
 \title{An empirical Bayes approach for replicability analysis across two studies}
 \usage{
-stareg(pa, pb)
+stareg(pa, pb, init.pi0 = TRUE)
 }
 \arguments{
 \item{pa}{A numeric vector of p-values from study 1.}
 
 \item{pb}{A numeric vector of p-values from study 2.}
+
+\item{init.pi0}{A logistic value for deciding whether to initialize the prior probabilities based on the estimates of pi0's. If true, estimate the marginal pi0's in two studies using qvalue; otherwise, specify pi0_pa = pi_pb = 0.9.}
 }
 \value{
 A list:

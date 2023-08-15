@@ -1,13 +1,14 @@
 ############################################################################################
 # Package: STAREG
-# Version: 1.0.1
-# Data: 2023-05-31
+# Version: 1.0.3
+# Data: 2023-08-04
 # Authors: Y. Li, X. Zhou, R. Chen, X. Zhang and H. Cao.
 ############################################################################################
 #' @title An empirical Bayes approach for replicability analysis across two studies
 #'
 #' @param pa A numeric vector of p-values from study 1.
 #' @param pb A numeric vector of p-values from study 2.
+#' @param init.pi0 A logistic value for deciding whether to initialize the prior probabilities based on the estimates of pi0's. If true, estimate the marginal pi0's in two studies using qvalue; otherwise, specify pi0_pa = pi_pb = 0.9.
 #'
 #' @return A list:
 #' \item{Lfdr}{The estimated local false discovery rate for replicability null.}
@@ -36,7 +37,7 @@
 #' res.stareg = stareg(p1, p2)
 #' sig.idx = which(res.stareg$fdr <= 0.05)
 #'
-stareg <- function(pa, pb){
+stareg <- function(pa, pb, init.pi0 = TRUE){
   pvals.cutoff = 1e-15
   pa[pa == 0] <- min(min(pa[pa != 0]), pvals.cutoff)
   pb[pb == 0] <- min(min(pb[pb != 0]), pvals.cutoff)
@@ -44,7 +45,8 @@ stareg <- function(pa, pb){
   pi0_pa <- min(pi0est(pa)$pi0, 0.999)
   pi0_pb <- min(pi0est(pb)$pi0, 0.999)
 
-  res <- em_lfdr(pa, pb, pi0_pa, pi0_pb)
+  if(init.pi0 == TRUE) res <- em_lfdr(pa, pb, pi0_pa, pi0_pb)
+  else res <- em_lfdr(pa, pb, 0.9, 0.9)
 
   return(res)
 }
